@@ -1,13 +1,10 @@
 #include <Adafruit_GFX.h>
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
-#include <SdFat.h>
 #include <SPI.h>
 #include "icons.h"
 
 MCUFRIEND_kbv tft;
-SdFat SD;
-File myFile;
 
 // Touch calibration values (adjust if needed)
 #define MINPRESSURE 200
@@ -30,24 +27,27 @@ struct WeatherData {
     char timeStr[6] = "00:00";
     char dateStr[11] = "00/00/0000";
     char dowStr[9] = "SUNDAY";
-    char temperature[3] = "00";
-    char humidity[3] = "00";
     char weather[10] = "SUNNY";
     char willRain[4] = "NO";
-    char rainTime[6] = "00:00";
-    char lstSync[11] = "00/00/0000";
+    char rainTime[6] = "--:--";
+    char ipAdd[16] = "NOT CONNECTED";
+    char sync[2] = "F";
 };
 
 WeatherData currentData;
 WeatherData prevData;
 
 #define BLACK   0x0000
+#define BLUE    0x001F
 #define RED     0xF800
 #define GREEN   0x07E0
 #define CYAN    0x07FF
 #define MAGENTA 0xF81F
 #define YELLOW  0xFFE0
 #define WHITE   0xFFFF
+#define GRAY    0x8410
+#define GRAYELLOW 0x7D0C
+#define GRAYBLUE 0x8414
 
 bool Touch_getXY(void)
 {
@@ -105,34 +105,34 @@ void drawMainScreen() {
         tft.print(currentData.rainTime);
         strcpy(prevData.rainTime, currentData.rainTime);
     }
-    if (strcmp(currentData.temperature, prevData.temperature) != 0)
-    {
-        tft.fillRect(170, 105, 90, 60, BLACK);
-        // Temperature
-        tft.setTextColor(YELLOW);
-        tft.setTextSize(7);
-        tft.setCursor(170, 105);
-        tft.print(currentData.temperature);
-        tft.setCursor(258, 105);
-        tft.drawCircle(258, 110, 5, YELLOW);
-        tft.drawCircle(258, 110, 4, YELLOW);
-        tft.setCursor(267, 105);
-        tft.print("C");
-        strcpy(prevData.temperature, currentData.temperature);
-    }
-    if (strcmp(currentData.humidity, prevData.humidity) != 0)
-    {
-        tft.fillRect(170, 165, 70, 50, BLACK);  // Clear old time
-        // Humidity
-        tft.setTextColor(YELLOW);
-        tft.setTextSize(6);
-        tft.setCursor(170, 165);
-        tft.print(currentData.humidity);
-        tft.setTextSize(4);
-        tft.setCursor(240, 168);
-        tft.print("%");
-        strcpy(prevData.humidity, currentData.humidity);
-    }
+    // if (strcmp(currentData.temperature, prevData.temperature) != 0)
+    // {
+    //     tft.fillRect(170, 105, 90, 60, BLACK);
+    //     // Temperature
+    //     tft.setTextColor(YELLOW);
+    //     tft.setTextSize(7);
+    //     tft.setCursor(170, 105);
+    //     tft.print(currentData.temperature);
+    //     tft.setCursor(258, 105);
+    //     tft.drawCircle(258, 110, 5, YELLOW);
+    //     tft.drawCircle(258, 110, 4, YELLOW);
+    //     tft.setCursor(267, 105);
+    //     tft.print("C");
+    //     strcpy(prevData.temperature, currentData.temperature);
+    // }
+    // if (strcmp(currentData.humidity, prevData.humidity) != 0)
+    // {
+    //     tft.fillRect(170, 165, 70, 50, BLACK);  // Clear old time
+    //     // Humidity
+    //     tft.setTextColor(YELLOW);
+    //     tft.setTextSize(6);
+    //     tft.setCursor(170, 165);
+    //     tft.print(currentData.humidity);
+    //     tft.setTextSize(4);
+    //     tft.setCursor(240, 168);
+    //     tft.print("%");
+    //     strcpy(prevData.humidity, currentData.humidity);
+    // }
 
     next_btn.initButton(&tft, tft.width() - 40 / 2 - 10, tft.height() - 40 / 2 - 10,
                         40, 40, WHITE, GREEN, BLACK, ">>", 2);
@@ -141,23 +141,29 @@ void drawMainScreen() {
 
 void drawPrevMainScreen() {
     tft.fillScreen(BLACK);
-    // uint8_t buffer[1250]; 
-    // myFile = SD.open("umbrella.bin");
 
-    // myFile.read(buffer, sizeof(buffer));
-    // myFile.close();
+    //tft.drawBitmap(0, 0,(const uint8_t*)na, 100, 100, RED);
+    // tft.drawBitmap(0, 0,(const uint8_t*)b, 100, 100, YELLOW);
+    // tft.drawBitmap(0, 0,(const uint8_t*)c, 100, 100, BLUE);
+    // tft.drawBitmap(0, 0,(const uint8_t*)h, 100, 100, YELLOW);
+    //tft.drawBitmap(0, 0,(const uint8_t*)i, 100, 100, BLUE);
+    // tft.drawBitmap(0, 0,(const uint8_t*)n, 100, 100, BLUE);
+    // tft.drawBitmap(0, 0,(const uint8_t*)r, 100, 100, GRAY);
+    // tft.drawBitmap(0, 0,(const uint8_t*)q, 100, 100, GRAY);
+    // tft.drawBitmap(0, 0,(const uint8_t*)p, 100, 100, GRAY);
+    //  tft.drawBitmap(0, 0,(const uint8_t*)j, 100, 100, GRAYELLOW);
+    tft.drawBitmap(0, 0,(const uint8_t*)k, 100, 100, GRAYBLUE);
 
-    // if (willRain == "YES")
-    // {
-    //     tft.drawBitmap(15, 105, (const uint8_t*)umbrella, 90, 90, MAGENTA);
-    // }
-    // else if (willRain == "NO")
-    // {
-        // tft.drawBitmap(15, 105,buffer, 90, 90, MAGENTA);
-    // }
 
-    // tft.drawBitmap(130, 105, (const uint8_t*)temp_icon, 25, 50, CYAN);
-    // tft.drawBitmap(118, 165, (const uint8_t*)humd_icon, 50, 50, CYAN);
+    if (String(currentData.willRain) == "NO") {
+        tft.drawBitmap(15, 105, (const uint8_t*)no_rain, 90, 90, MAGENTA);
+    }
+    else {
+        tft.drawBitmap(15, 105,(const uint8_t*)umbrella, 90, 90, MAGENTA);
+    }
+
+    tft.drawBitmap(130, 105, (const uint8_t*)temp_icon, 25, 50, CYAN);
+    tft.drawBitmap(118, 165, (const uint8_t*)humd_icon, 50, 50, CYAN);
 
     tft.setTextColor(GREEN);
     tft.setTextSize(6);
@@ -181,7 +187,7 @@ void drawPrevMainScreen() {
     tft.setTextColor(YELLOW);
     tft.setTextSize(7);
     tft.setCursor(170, 105);
-    tft.print(currentData.temperature);
+    // tft.print(currentData.temperature);
     tft.setCursor(258, 105);
     tft.drawCircle(258, 110, 5, YELLOW);
     tft.drawCircle(258, 110, 4, YELLOW);
@@ -191,7 +197,7 @@ void drawPrevMainScreen() {
     tft.setTextColor(YELLOW);
     tft.setTextSize(6);
     tft.setCursor(170, 165);
-    tft.print(currentData.humidity);
+    // tft.print(currentData.humidity);
     tft.setTextSize(4);
     tft.setCursor(240, 168);
     tft.print("%");
@@ -199,12 +205,32 @@ void drawPrevMainScreen() {
 
 void drawSyncScreen() {
     tft.fillScreen(BLACK);
+    if (String(currentData.ipAdd) == "NOT CONNECTED") {
+        tft.setTextColor(RED);
+        tft.setTextSize(3);
+        tft.setCursor(40, 0);
+        tft.print(currentData.ipAdd);
+    }
+    else {
+        tft.setTextColor(WHITE);
+        tft.setTextSize(3);
+        tft.setCursor(40, 0);
+        tft.print(currentData.ipAdd);
+    }
+    
     tft.setTextColor(WHITE);
     tft.setTextSize(2);
     tft.setCursor(40, 40);
     tft.print("Last Sync:");
     tft.setCursor(160, 40);
-    tft.print(currentData.lstSync);
+    tft.print(currentData.dateStr);
+
+    if (String(currentData.sync) == "F") {
+        tft.drawBitmap(140, 60, (const uint8_t*)cross, 50, 50, RED);
+    }
+    else {
+        tft.drawBitmap(140, 60, (const uint8_t*)check, 50, 50, GREEN);
+    }
 
     // Sync Now button
     sync_btn.initButton(&tft, tft.width() / 2, 140,
@@ -232,26 +258,9 @@ void drawSyncScreen() {
     lastActivityTime = millis();
 }
 
-void drawLEDScreen() {
-    tft.fillScreen(BLACK);
-    tft.setTextColor(WHITE);
-    tft.setTextSize(2);
-    tft.setCursor(40, 40);
-    tft.print("Last Sync:");
-    tft.setCursor(160, 40);
-    tft.print(currentData.lstSync);
-
-    // Sync Now button
-    sync_btn.initButton(&tft, tft.width() / 2, tft.height() - 50,
-                        120, 40, WHITE, YELLOW, BLACK, "Sync Now", 2);
-    sync_btn.drawButton(false);
-    lastActivityTime = millis();
-}
-
 void setup(void)
 {
     Serial.begin(115200);
-    SD.begin(chipSelect, SD_SCK_MHZ(25));
     uint16_t ID = tft.readID();
     if (ID == 0xD3D3) ID = 0x9486; // write-only shield
     tft.begin(ID);
@@ -275,15 +284,21 @@ void loop(void)
         int sixthComma = receivedData.indexOf(',', fifthComma + 1);
         int lastComma = receivedData.indexOf(',', sixthComma + 1);
 
-        if (firstComma != -1 && secondComma != -1 && thirdComma != -1 && fourthComma != -1 && fifthComma != -1 && sixthComma != -1 && lastComma != -1) {
+        if (firstComma != -1 && 
+            secondComma != -1 && 
+            thirdComma != -1 && 
+            fourthComma != -1 && 
+            fifthComma != -1 && 
+            sixthComma != -1 &&  
+            lastComma != -1) {
             receivedData.substring(0, firstComma).toCharArray(currentData.timeStr, sizeof(currentData.timeStr));
             receivedData.substring(firstComma + 1, secondComma).toCharArray(currentData.dateStr, sizeof(currentData.dateStr));
             receivedData.substring(secondComma + 1, thirdComma).toCharArray(currentData.dowStr, sizeof(currentData.dowStr));
-            receivedData.substring(thirdComma + 1, fourthComma).toCharArray(currentData.temperature, sizeof(currentData.temperature));
-            receivedData.substring(fourthComma + 1, fifthComma).toCharArray(currentData.humidity, sizeof(currentData.humidity));
-            receivedData.substring(fifthComma + 1, sixthComma).toCharArray(currentData.weather, sizeof(currentData.weather));
-            receivedData.substring(sixthComma + 1, lastComma).toCharArray(currentData.willRain, sizeof(currentData.willRain));
-            receivedData.substring(lastComma + 1).toCharArray(currentData.rainTime, sizeof(currentData.rainTime));
+            receivedData.substring(thirdComma + 1, fourthComma).toCharArray(currentData.weather, sizeof(currentData.weather));
+            receivedData.substring(fourthComma + 1, fifthComma).toCharArray(currentData.willRain, sizeof(currentData.willRain));
+            receivedData.substring(fifthComma + 1, sixthComma).toCharArray(currentData.rainTime, sizeof(currentData.rainTime));
+            receivedData.substring(sixthComma + 1, lastComma).toCharArray(currentData.ipAdd, sizeof(currentData.ipAdd));
+            receivedData.substring(lastComma + 1).toCharArray(currentData.sync, sizeof(currentData.sync));
 
             // Update the main screen with the new data
             // Serial.print(timeStr); Serial.print("   ");
@@ -332,7 +347,6 @@ void loop(void)
             on_btn.press(down && on_btn.contains(pixel_x, pixel_y));
             if (on_btn.justReleased()) on_btn.drawButton();
             if (on_btn.justPressed()) {
-                Serial.println("on");
                 ledOn = true;
                 tft.fillCircle(tft.width() / 2, 190, 15, BLACK);  
                 tft.fillCircle(tft.width() / 2, 190, 15, WHITE); 
@@ -340,12 +354,11 @@ void loop(void)
                 lastActivityTime = millis();
             }
 
-            // LED ON button
+            // LED OFF button
             off_btn.press(down && off_btn.contains(pixel_x, pixel_y));
             if (off_btn.justReleased()) off_btn.drawButton(); 
             if (off_btn.justPressed()) {
-                Serial.println("off");
-                bool ledOn = false;
+                ledOn = false;
                 tft.fillCircle(tft.width() / 2, 190, 15, BLACK); 
                 tft.drawCircle(tft.width() / 2, 190, 15, RED); 
                 off_btn.drawButton(true);
