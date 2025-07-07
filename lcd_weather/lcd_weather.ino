@@ -2,9 +2,12 @@
 #include <MCUFRIEND_kbv.h>
 #include <TouchScreen.h>
 #include <SPI.h>
+#include <DS3231.h>
+#include <Wire.h>
 #include "icons.h"
 
 MCUFRIEND_kbv tft;
+DS3231 rtc;
 
 // Touch calibration values (adjust if needed)
 #define MINPRESSURE 200
@@ -22,6 +25,9 @@ ScreenState currentScreen = MAIN_SCREEN;
 unsigned long lastActivityTime = 0;
 const unsigned long timeoutDuration = 3000;
 bool ledOn;
+bool century = false;
+bool h12Flag;
+bool pmFlag;
 
 struct WeatherData {
     char timeStr[6] = "00:00";
@@ -67,7 +73,47 @@ bool Touch_getXY(void)
 }
 
 void drawMainScreen() {
-    
+    if (strcmp(currentData.weather, prevData.weather) !=0)
+    {
+      if (String(currentData.weather) == "B"){
+        tft.drawBitmap(0, 0,(const uint8_t*)b, 100, 100, YELLOW);
+      }
+      else if (String(currentData.weather) == "C"){
+        tft.drawBitmap(0, 0,(const uint8_t*)c, 100, 100, BLUE);
+      }
+      else if (String(currentData.weather) == "H"){
+        tft.drawBitmap(0, 0,(const uint8_t*)h, 100, 100, YELLOW);
+      }
+      else if (String(currentData.weather) == "I"){
+        tft.drawBitmap(0, 0,(const uint8_t*)i, 100, 100, BLUE);
+      }
+      else if (String(currentData.weather) == "N"){
+        tft.drawBitmap(0, 0,(const uint8_t*)n, 100, 100, BLUE);
+      }
+      else if (String(currentData.weather) == "R"){
+        tft.drawBitmap(0, 0,(const uint8_t*)r, 100, 100, GRAY);
+      }
+      else if (String(currentData.weather) == "Q"){
+        tft.drawBitmap(0, 0,(const uint8_t*)q, 100, 100, GRAY);
+      }
+      else if (String(currentData.weather) == "P"){
+        tft.drawBitmap(0, 0,(const uint8_t*)p, 100, 100, GRAY);
+      }
+      else if (String(currentData.weather) == "J"){
+        tft.drawBitmap(0, 0,(const uint8_t*)j, 100, 100, GRAYELLOW);
+      }
+      else if (String(currentData.weather) == "K"){
+        tft.drawBitmap(0, 0,(const uint8_t*)k, 100, 100, GRAYBLUE);
+      }
+      else{
+        tft.drawBitmap(0, 0,(const uint8_t*)na, 100, 100, RED);
+      }
+
+      strcpy(prevData.weather, currentData.weather);
+    }
+
+    // currentData.timeStr = String(rtc.getHour(h12Flag, pmFlag), DEC) + ":" + String(rtc.getMinute());
+    snprintf(currentData.timeStr, sizeof(currentData.timeStr), "%2d:%2d", rtc.getHour(h12Flag, pmFlag), rtc.getMinute());
     if (strcmp(currentData.timeStr, prevData.timeStr) != 0)
     {
         tft.fillRect(105, 0, 180, 50, BLACK);
@@ -77,6 +123,9 @@ void drawMainScreen() {
         tft.print(currentData.timeStr);
         strcpy(prevData.timeStr, currentData.timeStr);
     }
+
+    // currentData.dateStr = String(rtc.getMonth(century)) + "/" + String(rtc.getDate()) + "/" + String(rtc.getYear())
+    snprintf(currentData.dateStr, sizeof(currentData.dateStr), "%02d/%02d/%02d", rtc.getMonth(century), rtc.getDate(), rtc.getYear());
     if (strcmp(currentData.dateStr, prevData.dateStr) != 0)
     {
         tft.fillRect(120, 50, 180, 20, BLACK);
@@ -141,19 +190,39 @@ void drawMainScreen() {
 
 void drawPrevMainScreen() {
     tft.fillScreen(BLACK);
-
-    //tft.drawBitmap(0, 0,(const uint8_t*)na, 100, 100, RED);
-    // tft.drawBitmap(0, 0,(const uint8_t*)b, 100, 100, YELLOW);
-    // tft.drawBitmap(0, 0,(const uint8_t*)c, 100, 100, BLUE);
-    // tft.drawBitmap(0, 0,(const uint8_t*)h, 100, 100, YELLOW);
-    //tft.drawBitmap(0, 0,(const uint8_t*)i, 100, 100, BLUE);
-    // tft.drawBitmap(0, 0,(const uint8_t*)n, 100, 100, BLUE);
-    // tft.drawBitmap(0, 0,(const uint8_t*)r, 100, 100, GRAY);
-    // tft.drawBitmap(0, 0,(const uint8_t*)q, 100, 100, GRAY);
-    // tft.drawBitmap(0, 0,(const uint8_t*)p, 100, 100, GRAY);
-    //  tft.drawBitmap(0, 0,(const uint8_t*)j, 100, 100, GRAYELLOW);
-    tft.drawBitmap(0, 0,(const uint8_t*)k, 100, 100, GRAYBLUE);
-
+    if (String(currentData.weather) == "B"){
+      tft.drawBitmap(0, 0,(const uint8_t*)b, 100, 100, YELLOW);
+    }
+    else if (String(currentData.weather) == "C"){
+      tft.drawBitmap(0, 0,(const uint8_t*)c, 100, 100, BLUE);
+    }
+    else if (String(currentData.weather) == "H"){
+      tft.drawBitmap(0, 0,(const uint8_t*)h, 100, 100, YELLOW);
+    }
+    else if (String(currentData.weather) == "I"){
+      tft.drawBitmap(0, 0,(const uint8_t*)i, 100, 100, BLUE);
+    }
+    else if (String(currentData.weather) == "N"){
+      tft.drawBitmap(0, 0,(const uint8_t*)n, 100, 100, BLUE);
+    }
+    else if (String(currentData.weather) == "R"){
+      tft.drawBitmap(0, 0,(const uint8_t*)r, 100, 100, GRAY);
+    }
+    else if (String(currentData.weather) == "Q"){
+      tft.drawBitmap(0, 0,(const uint8_t*)q, 100, 100, GRAY);
+    }
+    else if (String(currentData.weather) == "P"){
+      tft.drawBitmap(0, 0,(const uint8_t*)p, 100, 100, GRAY);
+    }
+    else if (String(currentData.weather) == "J"){
+      tft.drawBitmap(0, 0,(const uint8_t*)j, 100, 100, GRAYELLOW);
+    }
+    else if (String(currentData.weather) == "K"){
+      tft.drawBitmap(0, 0,(const uint8_t*)k, 100, 100, GRAYBLUE);
+    }
+    else{
+      tft.drawBitmap(0, 0,(const uint8_t*)na, 100, 100, RED);
+    }
 
     if (String(currentData.willRain) == "NO") {
         tft.drawBitmap(15, 105, (const uint8_t*)no_rain, 90, 90, MAGENTA);
@@ -168,6 +237,7 @@ void drawPrevMainScreen() {
     tft.setTextColor(GREEN);
     tft.setTextSize(6);
     tft.setCursor(105, 0);
+    
     tft.print(currentData.timeStr);
 
     tft.setTextSize(3);
@@ -212,7 +282,7 @@ void drawSyncScreen() {
         tft.print(currentData.ipAdd);
     }
     else {
-        tft.setTextColor(WHITE);
+        tft.setTextColor(BLUE);
         tft.setTextSize(3);
         tft.setCursor(40, 0);
         tft.print(currentData.ipAdd);
@@ -230,6 +300,12 @@ void drawSyncScreen() {
     }
     else {
         tft.drawBitmap(140, 60, (const uint8_t*)check, 50, 50, GREEN);
+        rtc.setYear(String(currentData.dateStr).substring(6, 10).toInt());
+        rtc.setMonth(String(currentData.dateStr).substring(0, 2).toInt());
+        rtc.setDate(String(currentData.dateStr).substring(3, 5).toInt());
+        rtc.setDoW(currentData.dowStr);
+        rtc.setHour(String(currentData.timeStr).substring(0, 2).toInt());
+        rtc.setMinute(String(currentData.timeStr).substring(3, 5).toInt());
     }
 
     // Sync Now button
@@ -260,7 +336,11 @@ void drawSyncScreen() {
 
 void setup(void)
 {
+    Serial1.begin(115200);
     Serial.begin(115200);
+    Wire.begin();
+    rtc.setClockMode(false); // 24 hour
+
     uint16_t ID = tft.readID();
     if (ID == 0xD3D3) ID = 0x9486; // write-only shield
     tft.begin(ID);
@@ -272,8 +352,9 @@ void setup(void)
 
 void loop(void)
 {
-    if (Serial.available() > 0) {
-        String receivedData = Serial.readStringUntil('\n'); // Read data until newline
+    if (Serial1.available() > 0) {
+        String receivedData = Serial1.readStringUntil('\n'); // Read data until newline
+        Serial.println (receivedData);
 
         // Parse the incoming data (time, dateStr, dowStr, weather, willRain, rainTime, ip add, done sync)
         int firstComma = receivedData.indexOf(',');
@@ -301,14 +382,12 @@ void loop(void)
             receivedData.substring(lastComma + 1).toCharArray(currentData.sync, sizeof(currentData.sync));
 
             // Update the main screen with the new data
-            // Serial.print(timeStr); Serial.print("   ");
-            // Serial.print(dateStr); Serial.print("   ");
-            // Serial.print(dowStr); Serial.print("   ");
-            // Serial.print(temperature); Serial.print("   ");
-            // Serial.print(humidity); Serial.print("   ");
-            // Serial.print(weather); Serial.print("   ");
-            // Serial.print(willRain); Serial.print("   ");
-            // Serial.println(rainTime); 
+            Serial.print(currentData.timeStr); Serial.print("       ");
+            Serial.print(currentData.dateStr); Serial.print("       ");
+            Serial.print(currentData.dowStr); Serial.print("       ");
+            Serial.print(currentData.weather); Serial.print("       ");
+            Serial.print(currentData.willRain); Serial.print("       ");
+            Serial.println(currentData.rainTime); 
 
             drawMainScreen();
         }
@@ -338,7 +417,7 @@ void loop(void)
             sync_btn.press(down && sync_btn.contains(pixel_x, pixel_y));
             if (sync_btn.justReleased()) sync_btn.drawButton();
             if (sync_btn.justPressed()) {
-                Serial.println("sync");
+                Serial1.println("sync");
                 sync_btn.drawButton(true);
                 lastActivityTime = millis(); // Reset inactivity timer
             }
